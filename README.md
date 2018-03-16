@@ -34,7 +34,7 @@ Besides these, the repository also hosts:
 This section describes the `makeFIBrules2.py` script, used to setup FIB entries.
 
 ### Hashestray
-Recall that we employ hashes to construct the **hashestray**, or **hashtray** for short. An entry in the FIB is a hashtray, which is a structure divided in _n_ blocks, where each block inholds the result of the hash calculation of the NDN name component at the homologue position. A device that supports 4 components at most builds 4 block hashtrays. Such a device would build a hashtray from "a/b/c" as:
+Recall that we employ hashes to construct the **hashestray**, or **hashtray** for short. An entry in the FIB is a hashtray, which is a structure divided in _n_ blocks, where each block inholds the result of the hash calculation of the NDN name component at the homologue position. A device that supports at most 4 components builds 4 block hashtrays. Such a device would build a hashtray from "a/b/c" as:
 
 | h("a") | h("b") | h("c") |  0  |
 
