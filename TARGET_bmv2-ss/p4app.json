@@ -1,0 +1,10 @@
+{
+    "program": "Main.p4",
+    "language": "p4-16",
+    "targets": {
+	"mininet": {
+	    "num-hosts": 4,
+	    "switch-config": "s1-commands.txt"
+	}
+    }
+}

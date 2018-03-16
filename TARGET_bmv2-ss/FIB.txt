@@ -1,0 +1,3 @@
+/portugal/unlisboa/fciencia/index.ht 1
+/portugal/unlisboa/fciencia 2
+/portugal/unlisboa 3
