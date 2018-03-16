@@ -2,24 +2,13 @@
 
 This repository contains the source code for "Named Data Networking using Programmable Switches", a master's dissertation by Rui Miguel and supervised by Fernando Ramos, both from the Faculty of Sciences ("FCiências") of the University of Lisbon ("ULisboa").
 
-Besides the P4 program, two other products resulted from our project:
+Besides the P4 program, this repository also hosts:
 
 * An NDN packet generator programmed in C, which we called **rawpkt**;
 * A python script to generate entries for the Forwarding Information Base (FIB), called **makeFIBrules2.py**, originally by Salvatore Signorello and available publicly in [his repository](https://github.com/signorello/NDN.p4). It has been adapted for our solution.
 * A modification of the **simple\_switch** architecture from the [Behavioral Model 2](https://github.com/p4lang/behavioral-model) (BMv2).
 
 
-
-Before putting our project to work, the reader must git-clone or install the following:
-
-* [p4c](https://github.com/p4lang/p4c), the official P4-16 compiler.
-* [behavioral-model](https://github.com/p4lang/behavioral-model), a switch implemented in software that supports P4. P4 programs are compiled using p4c to a .JSON representation that the switch consumes to process packets according to what the program prescribed.
-* [mininet](http://mininet.org/), a network emulator. We used a native installation to run our tests.
-
-
----
-
-Below we present auxiliary products of our project.
 
 ## rawpkt
 
@@ -28,12 +17,12 @@ Generates NDN packets. A README inside the rawpkt folder will provide more infor
 ## makeFIBrules2.py
 
 ### Hashestray
-Recall that we employ hashes to construct the **hashestray**, or **hashtray** for short. An entry in the FIB is a hashtray, which is a structure divided in _n_ blocks, where each block inholds the result of the hash calculation of the NDN name component at the homologue position. Meaning, a 4 block hashtray built from "a/b/c" becomes:
+Recall that we employ hashes to construct the **hashestray**, or **hashtray** for short. An entry in the FIB is a hashtray, which is a structure divided in _n_ blocks, where each block inholds the result of the hash calculation of the NDN name component at the homologue position. A device that supports 4 components at most builds 4 block hashtrays. Such a device would build a hashtray from "a/b/c" as:
 
 | h("a") | h("b") | h("c") |  0  |
 
 ### The script
-When inserting a route onto the FIB, the hash calculations of its components must be performed and the hashtray must be built. This script, **makeFIBrules2.py** constructs the partition and attaches a mask based on:
+When inserting a route onto the FIB, the hash calculations of its components must be performed and the hashtray must be built. This script, **makeFIBrules2.py** constructs the hashtray and attaches a mask based on:
 
 * the number of components on the route and 
 * the hash function output length.
@@ -63,6 +52,6 @@ Then the script appends the following lines to out.txt.
 
 ## simple\_switch
 
-We have implemented a Content Store directly onto the switch architecture. Further info will be made available in the README file inside the folder, but, for now, and until a large change happens to those files in the BMv2 repository, the files can simply be replaced. The switch must then be recompiled using **make**.
+**WARNING:** The directory with the modified simple\_switch files has not been revised since July 2017, and may no longer be working. 
 
-**WARNING:** The directory with the modified simple\_switch files has not been revised since the latest BMv2 commits, and may no longer be working.
+Is unnecessary if you don't need the Content Store. We have implemented a Content Store directly onto the switch architecture. Further info will be made available in a README file inside the folder, but, for now, and until a large change happens to those files in the BMv2 repository, the files can simply be replaced. The switch must then be recompiled using **make**.
