@@ -48,7 +48,7 @@ Using this script assumes two files: an INPUT file of text, containing the entri
 
 Routes are arranged by the control plane, which is out of the scope of P4. This is why, in practice, routes become fixed from the moment Mininet is launched.
 
-Use as follows: `makeFIBrules2.py --fib in.txt --cmd out.txt`, where fib.txt is the INPUT file and commands.txt is the OUTPUT file.
+Use as follows: `makeFIBrules2.py --fib in.txt --cmd out.txt`, where in.txt is the INPUT file and out.txt is the OUTPUT file.
 
 Assuming the script is set for 4 maximum components and uses the crc-32 hash function (32 bits output), if in.txt is:
 

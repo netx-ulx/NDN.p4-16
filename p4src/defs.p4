@@ -21,7 +21,7 @@
 //ALWAYS PLACE MAXIMUM_COMPONENTS * HASH_LENGTH HERE!!
 //The compiler rejects expressions in preprocessing
 
-#define REGISTER_ARRAY_SIZE 512
+#define REGISTER_ARRAY_SIZE 4096
 //Size of the register arrays. Most devices don't implement division remainder
 //(the % operator), so it is recommended to type a multiple of 2 here.
 
@@ -52,27 +52,6 @@ header Ethernet_h { // standard Ethernet header
    bit<16> etherType;
 }
 
-
-/** FORENOTE
- * BMv2 backend compiler does not accept variable length fields or header_
- * unions yet. The only purpose of the ifndef below is to have fixed length
- * fields in order to be able to test the program.
- *
- * Therefore, we are defining two cases:
- *
- * FIRST CASE: The macro TARGET_BMV2 is not defined. This means the
- * compiler accepts both unions and fixed-length fields. Once the BMv2 backend
- * has been fully developed to accept all P4-16 features, this should be the
- * default case.
- * In this case, the "TLV_h" type is a header_union that is either a (these are
- * the names as given by Signorello et al) smallTLV, a mediumTLV, etc.
- *
- * SECOND CASE: The macro TARGET_BMV2 is defined. In this case, the BMv2
- * backend compiler does not accept header unions and/or fixed-length fields.
- * In this case, the "TLV_h" type is a header with 8 bits of type, 8 bits of
- * length and 64 bits (8 bytes) of value. You can change this value below.
- */
-#ifndef TARGET_BMV2
 
 header smallTLV_h {
    bit<8> type;
@@ -107,17 +86,6 @@ header_union TLV_h {
    largeTLV_h largeTLV;
    //hugeTLV_h hugeTLV;
 }
-
-#else 
-  #define VALUE_LENGTH 64 // 8 bytes
-
-header TLV_h {
-   bit<8> type;
-   bit<8> lencode;
-   bit<VALUE_LENGTH> value;
-}
-
-#endif //TARGET_BMV2
 
 //======================================
 /**
@@ -177,13 +145,8 @@ struct Parsed_packet {
    Ethernet_h     ethernet;
    
    //2nd: TLVs.
- #ifndef TARGET_BMV2 //The parser will decide if it should extract a value
    TLV_h       tl0;
    TLV_h       name;
- #else
-   TL_h        tl0;
-   TL_h        name;
- #endif
    
    TLV_h[MAXIMUM_COMPONENTS] components;
    
@@ -310,4 +273,3 @@ error {
 }
 
 #endif  /* _P4_NDN_DEFINITIONS_ */
-
