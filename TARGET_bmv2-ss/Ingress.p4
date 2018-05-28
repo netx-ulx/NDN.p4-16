@@ -10,6 +10,7 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
 
    //PIT declaration
    register<bit<NUMBER_OF_PORTS>>(REGISTER_ARRAY_SIZE) PIT;
+   bit<32> lastidx = 0;
 
 
    #include "Actions.p4"
@@ -135,18 +136,25 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
       // always zeroes.
 
       v.value = p.components[0].value;
-      hash(digest_ret, HashAlgorithm.crc32, (Hash) 0, v, (Hash) 0xFFffFFff);
+      hash(digest_ret, HashAlgorithm.identity, (Hash) 0, v, (Hash) 0xFFffFFffFFffFFff);
       m.hashtray = (bit<HASHTRAY_LENGTH>) digest_ret;
-      m.hashtray = m.hashtray << HASH_LENGTH;      
+      m.hashtray = m.hashtray << HASH_LENGTH;
       
-      index = digest_ret & 0b111; //built with 3 bits of each component
+      index = lastidx;
+
+      if (lastidx >= REGISTER_ARRAY_SIZE)
+        lastidx = 0;
+      else
+        lastidx = lastidx + 1;
+      //random(index, 0, REGISTER_ARRAY_SIZE);
+      //index = (bit<32>) digest_ret & 0b111; //built with 3 bits of each component
       
       //COMPONENT 2 (component 1 exists because all names have at least 1)
       if (m.number_of_components > 1) {
          v.value = p.components[1].value;
-         hash(digest_ret, HashAlgorithm.crc32, (Hash) 0, v, (Hash) 0xFFffFFff);
+         hash(digest_ret, HashAlgorithm.identity, (Hash) 0, v, (Hash) 0xFFffFFffFFffFFff);
          m.hashtray = m.hashtray | (bit<HASHTRAY_LENGTH>) digest_ret;
-         index = (index << 3) | (digest_ret & 0b111);
+         //index = (index << 3) | (bit<32>)(digest_ret & 0b111);
       }
       
       m.hashtray = m.hashtray << HASH_LENGTH;
@@ -154,9 +162,9 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
       //COMPONENT 3
       if (m.number_of_components > 2) {
          v.value = p.components[2].value;
-         hash(digest_ret, HashAlgorithm.crc32, (Hash) 0, v, (Hash) 0xFFffFFff);
+         hash(digest_ret, HashAlgorithm.identity, (Hash) 0, v, (Hash) 0xFFffFFffFFffFFff);
          m.hashtray = m.hashtray | (bit<HASHTRAY_LENGTH>) digest_ret;
-         index = (index << 3) | (digest_ret & 0b111);
+         //index = (index << 3) | (bit<32>)(digest_ret & 0b111);
       }
       
       m.hashtray = m.hashtray << HASH_LENGTH;
@@ -164,19 +172,47 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
       //COMPONENT 4
       if (m.number_of_components > 3) {
          v.value = p.components[3].value;
-         hash(digest_ret, HashAlgorithm.crc32, (Hash) 0, v, (Hash) 0xFFffFFff);
+         hash(digest_ret, HashAlgorithm.identity, (Hash) 0, v, (Hash) 0xFFffFFffFFffFFff);
          m.hashtray = m.hashtray | (bit<HASHTRAY_LENGTH>) digest_ret;
-         index = (index << 3) | (digest_ret & 0b111);
+         //index = (index << 3) | (bit<32>)(digest_ret & 0b111);
       }
+
+      m.hashtray = m.hashtray << HASH_LENGTH;     
+     
+      if (m.number_of_components > 4) {
+         v.value = p.components[4].value;
+         hash(digest_ret, HashAlgorithm.identity, (Hash) 0, v, (Hash) 0xFFffFFffFFffFFff);
+         m.hashtray = m.hashtray | (bit<HASHTRAY_LENGTH>) digest_ret;
+         //index = (index << 3) | (bit<32>)(digest_ret & 0b111);
+      }     
       
-      // These lines are necessary because shift count cannot be bigger than
-      // 255 in bmv2.
-      m.hashtray = m.hashtray << 248;
-      m.hashtray = m.hashtray << 8;
-      m.hashtray = m.hashtray << (bit<8>)
-         ((MAXIMUM_COMPONENTS - 8 - 4) * HASH_LENGTH);  
-         //-4 is because we always shift even if the component was not there
-         //-8 because hashed_components is already shifted left by 256      
+      m.hashtray = m.hashtray << HASH_LENGTH;     
+     
+      if (m.number_of_components > 5) {
+         v.value = p.components[5].value;
+         hash(digest_ret, HashAlgorithm.identity, (Hash) 0, v, (Hash) 0xFFffFFffFFffFFff);
+         m.hashtray = m.hashtray | (bit<HASHTRAY_LENGTH>) digest_ret;
+         //index = (index << 3) | (bit<32>)(digest_ret & 0b111);
+      } 
+     
+      m.hashtray = m.hashtray << HASH_LENGTH;     
+     
+      if (m.number_of_components > 6) {
+         v.value = p.components[6].value;
+         hash(digest_ret, HashAlgorithm.identity, (Hash) 0, v, (Hash) 0xFFffFFffFFffFFff);
+         m.hashtray = m.hashtray | (bit<HASHTRAY_LENGTH>) digest_ret;
+         //index = (index << 3) | (bit<32>)(digest_ret & 0b111);
+      }
+     
+      m.hashtray = m.hashtray << HASH_LENGTH;
+     
+      if (m.number_of_components > 7) {
+         v.value = p.components[7].value;
+         hash(digest_ret, HashAlgorithm.identity, (Hash) 0, v, (Hash) 0xFFffFFffFFffFFff);
+         m.hashtray = m.hashtray | (bit<HASHTRAY_LENGTH>) digest_ret;
+         //index = (index << 3) | (bit<32>)(digest_ret & 0b111);
+      }
+     
       
 /* ============================================================================
  * --- PACKET TYPE:     N A K
@@ -255,13 +291,13 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
          //Else we'll have to record this Interest in the PIT and nonces.
          PIT.read(m.mcastports, index);
 
-         if (m.mcastports == 0) { //First Interest seen for this name
+         //if (m.mcastports == 0) { //First Interest seen for this name
             switch (fib.apply().action_run) {
                Drop: { return; } //Forward if entry exists, otherwise Drop
                //return is necessary to avoid altering the PIT
                //TODO: Should send NAK packet towards ingress_port
             }; 
-         }            
+         //}            
 
          // The bit<8> cast below is necessary because BMv2 tolerates a
          // shift count of a value expressed in a maximum of 8 bits.
@@ -271,7 +307,7 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
             
          PIT.write(index, m.mcastports);
 
-	m.mcastports = 0;
+	 m.mcastports = 0;
       }
    }
 }
