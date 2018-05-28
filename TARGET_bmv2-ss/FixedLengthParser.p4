@@ -83,8 +83,83 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       
       transition select( m.namesize ) {
          0 : parse_by_pkttype;
+         _ : parse_components_five;        
       }
-   }     
+   }
+  
+   state parse_components_five {
+      b.extract( p.components[4] );
+   
+      verify( (P4DualExtractArg) p.components[4].lencode <= m.namesize,
+             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+      
+      m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
+      m.number_of_components = m.number_of_components + 1;
+      
+      transition select( m.namesize ) {
+         0 : parse_by_pkttype;
+         _ : parse_components_six;        
+      }
+   }
+  
+   state parse_components_six {
+      b.extract( p.components[5] );
+   
+      verify( (P4DualExtractArg) p.components[5].lencode <= m.namesize,
+             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+      
+      m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
+      m.number_of_components = m.number_of_components + 1;
+      
+      transition select( m.namesize ) {
+         0 : parse_by_pkttype;
+         _ : parse_components_seven;        
+      }
+   }
+  
+   state parse_components_seven {
+      b.extract( p.components[6] );
+   
+      verify( (P4DualExtractArg) p.components[6].lencode <= m.namesize,
+             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+      
+      m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
+      m.number_of_components = m.number_of_components + 1;
+      
+      transition select( m.namesize ) {
+         0 : parse_by_pkttype;
+         _ : parse_components_eight;        
+      }
+   }
+  
+   state parse_components_eight {
+      b.extract( p.components[7] );
+   
+      verify( (P4DualExtractArg) p.components[7].lencode <= m.namesize,
+             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+      
+      m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
+      m.number_of_components = m.number_of_components + 1;
+      
+      transition select( m.namesize ) {
+         0 : parse_by_pkttype;
+         _ : parse_components_nine;
+      }
+   }
+  
+   state parse_components_nine {
+      b.extract( p.components[8] );
+   
+      verify( (P4DualExtractArg) p.components[8].lencode <= m.namesize,
+             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+      
+      m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
+      m.number_of_components = m.number_of_components + 1;
+      
+      transition select( m.namesize ) {
+         0 : parse_by_pkttype;
+      }
+   }  
    
    
    state parse_by_pkttype {
@@ -100,7 +175,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       b.extract( p.content );
 #endif
       
-      p.tl0.type = 0xff;
+      //p.tl0.type = 0xff;
       
       m.parsed = 1;
       
@@ -114,7 +189,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       
       m.parsed = 1;
       
-      p.tl0.type = 0xfe;
+      //p.tl0.type = 0xfe;
       
       transition accept;
    }

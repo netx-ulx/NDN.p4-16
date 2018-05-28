@@ -8,11 +8,14 @@
 //GLOBAL VARIABLES
 unsigned int PARAM_pktcount;
 unsigned int PARAM_sendpktinterval = 0;
+unsigned char PARAM_cmpvari = 0;
 
 char * ifacename;
 char * const DEFAULT_IFACE = "eth0";
 
 char custom_deth = 0;
+unsigned short scan_mode = 1;
+
 
 char * name;
 char DEFAULT_NAME[41] = "portugal/unlisboa/fciencia/index.ht";
@@ -69,7 +72,7 @@ void interpret(int argc, char** args, unsigned char* sendbuf) {
     }
 
 /* =======================================================================
- * --- OPTION:  -f
+ * --- OPTION:  -f <file>
  * =======================================================================
  * Sets the packet type to Data and appends the following file contents.
  * WARNING: This file MUST inhold 8 characters.
@@ -80,7 +83,7 @@ void interpret(int argc, char** args, unsigned char* sendbuf) {
     }
 
 /* =======================================================================
- * --- OPTION:  -t, --time
+ * --- OPTION:  -t, --time <interval>
  * =======================================================================
  * Sets the interval between two packet transmissions, in miliseconds.
  */
@@ -90,6 +93,32 @@ void interpret(int argc, char** args, unsigned char* sendbuf) {
       PARAM_sendpktinterval = strtol(args[++count], NULL, 10);
     }
      
+    
+/* =======================================================================
+ * --- OPTION:  -r <rounds>
+ * =======================================================================
+ * Number of bursts to send (by the generator) or receive (by the listener).
+ * WARNING: Remember the router only replies once because the PIT stores the
+ * request. If you want to use this option, you'll have to make sure the router
+ * consults the FIB every time, otherwise rawpkt becomes stuck.
+ */
+    else if (strncmp(args[count], "-r", 2) == 0)
+    {
+      scan_mode = strtol(args[++count], NULL, 10);
+    }
+    
+/* =======================================================================
+ * --- OPTION:  -vc / --vary-components <n>
+ * =======================================================================
+ * Each round, the number of components varies by n. Maximum variation of 255
+ * (unsigned char). A round is determined by -r, not -c.
+ */
+    else if (strncmp(args[count], "-vc", 3) == 0 || !strncmp(args[count], 
+                                                    "--vary-components", 17))
+    {
+      PARAM_cmpvari = (unsigned char) strtol(args[++count], NULL, 10);
+    }
+    
 /* =======================================================================
  * --- OPTION:  -d, -deth
  * =======================================================================

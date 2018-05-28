@@ -10,13 +10,13 @@ const unsigned char NAME_COMPONENT_TOKEN = '/';
  * and have the program work correctly without having to go back and update
  * every function.
  */
-char is_component_separator_token(unsigned char test_token) {
+static inline char is_component_separator_token(unsigned char test_token) {
   return test_token == NAME_COMPONENT_TOKEN;
 }
 
 
 /**
- * Calculates the packet size. It does this by analyzing the name and
+ * Calculates the name size. It does this by analyzing the name and
  * invoking is_component_separator_token() to discern between components.
  * Each component adds 2 bytes to the total (type and length) or more
  * depending on the necessity of a length extension.
@@ -24,9 +24,9 @@ char is_component_separator_token(unsigned char test_token) {
  * @requires 'name' has a null terminating byte
  *        && the first character is not a component delimiter token.
  * @return The sum of all component TLVs. Does not count with type and len
- *        from TLVN, TLV0 or any other packet TLV.
+ *        from TLVN.
  */
-unsigned int calculate_ndn_pkt_size(const unsigned char * name)
+static unsigned int calculate_name_size(const unsigned char * name)
 {
   unsigned int i = 0;
   unsigned int total = TYPE + LENCODE; //This TYPE and LENCODE are from TLVName
@@ -110,7 +110,7 @@ void fill_component(unsigned char * buffer, unsigned char * component, unsigned 
   
   const size_t component_size = strlen((char *) component);
 
-  printf("INFO: Filling in next component: %s\n", component);
+  //printf("INFO: Filling in next component: %s\n", component);
 
   // 1 -- Fill in type and lencode
   buffer[(*ptr)++] = 0x08; //NDNTYPE_Component
@@ -143,14 +143,14 @@ unsigned long long fill_interest(
 
   const size_t name_length = strlen((char *) name);
 
-  buffer[14] = 0x05; //NDNTYPE_INTEREST
+  buffer[14] = 0x05; //NDNTYPE_INTEREST (TLV0)
 
   const unsigned long long packet_length =
-	calculate_ndn_pkt_size(name) + NONCE_TLV_SIZE;
+	calculate_name_size(name) + NONCE_TLV_SIZE;
 
   fill_TLV_length(buffer, packet_length, ptr);
 
-  buffer[(*ptr)++] = 0x07; //NDNTYPE_NAME
+  buffer[(*ptr)++] = 0x07; //NDNTYPE_NAME (TLVn)
   fill_TLV_length(buffer, packet_length - TYPE - LENCODE - NONCE_TLV_SIZE, ptr);
 
   unsigned int i;
@@ -206,7 +206,7 @@ unsigned long long fill_data(unsigned char * buffer,
 
  const size_t name_length = strlen((char *) name);
  const unsigned long long contentlen = getfilesize(contentfile);
- const unsigned long long packet_length = calculate_ndn_pkt_size(name) + TYPE + LENCODE + contentlen;
+ const unsigned long long packet_length = calculate_name_size(name) + TYPE + LENCODE + contentlen;
 
  fill_TLV_length(buffer, packet_length, ptr);
 

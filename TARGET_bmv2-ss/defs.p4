@@ -13,11 +13,11 @@
 //to be implemented.
 
 
-#define HASH_LENGTH 32  //length for a component's hash digest in BITS.
+#define HASH_LENGTH 64  //length for a component's hash digest in BITS.
    //Results in more collisions (collision in the sense of two different objects
    //with the same hash) if smaller, increases tables' sizes if bigger.
 
-#define HASHTRAY_LENGTH 512//( 16 * 32 )
+#define HASHTRAY_LENGTH 512//( 8 * 64 )
 //ALWAYS PLACE MAXIMUM_COMPONENTS * HASH_LENGTH HERE!!
 //The compiler rejects expressions in preprocessing
 
@@ -185,7 +185,7 @@ struct Parsed_packet {
    TL_h        name;
  #endif
    
-   TLV_h[MAXIMUM_COMPONENTS] components;
+   TLV_h[MAXIMUM_COMPONENTS+1] components;
    
    
    //3rd: a) -- INTEREST

@@ -16,6 +16,7 @@
 #define LENCODE 1
 #define NONCE_TLV_SIZE ( TYPE + LENCODE + 4 )
 
+#define LINEAR_ASCENT_PACKETN 100
 
 #define chrtohex(c) (((c) <= '9')   ?   ((c) - '0')  :  ((((c)-1) & 0xF) + 0xA))
 
