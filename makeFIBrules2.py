@@ -16,7 +16,7 @@ import zlib
 table_name = "fib"
 action_name = "Set_outputport"
 max_components = 16
-hash_function = "crc-32"
+hash_function = "siphash" #Keep this in mind!
 
 def parse_args():
     usage = """Usage: createFIBrules --fib fib.txt --cmd commands.txt [-t table_name] [-a action_name] [-c max_components] [-f has_function]

@@ -13,7 +13,7 @@
 //to be implemented.
 
 
-#define HASH_LENGTH 32  //length for a component's hash digest in BITS.
+#define HASH_LENGTH 64  //length for a component's hash digest in BITS.
    //Results in more collisions (collision in the sense of two different objects
    //with the same hash) if smaller, increases tables' sizes if bigger.
 
@@ -39,6 +39,9 @@ typedef bit<32>  P4DualExtractArg; //This field represents the maximum suported
 typedef bit<HASH_LENGTH> Hash;
 typedef bit<NUMBER_OF_PORTS_LOG> portid_t;
 typedef bit<HASHTRAY_LENGTH> hashestray_t;
+
+
+const HashAlgorithm HASHALGO = HashAlgorithm.identity; //Change HASH_LENGTH too
 
 
 
@@ -222,6 +225,7 @@ struct Metadata {
    //function that sets a varbit's dynamic length by reading more than 32 bits.
    bit<8> number_of_components; //used to count components
    hashestray_t hashtray;
+
    
    bit<NUMBER_OF_PORTS> mcastports;//== 0 when pkt is not being cloned
    
@@ -237,39 +241,39 @@ struct Metadata {
 //----------------------------------------------------------
 error {
    //UnrecognizedPacketType,
-   PARSER_P4_TLVTooLarge, //for TLVs whose length code is 255 or the number
+   P4_TLVTooLarge, //for TLVs whose length code is 255 or the number
    //of bytes to read can't be expressed in bits. Unsupported by P4-16.
-   PARSER_NDN_UnknownPacketType, //Packets is neither Interest, Data or NAK.
-   PARSER_NDN_ExpectedNameAfterTL0,
-   PARSER_NDN_ExpectedComponent,
+   NDN_UnknownPacketType, //Packets is neither Interest, Data or NAK.
+   NDN_ExpectedNameAfterTL0,
+   NDN_ExpectedComponent,
    
-   PARSER_NDN_InnerTLVBiggerThanOuterTLV,
-   PARSER_NDN_InnerTLVBiggerThanOuterTLV_NameBiggerThanTL0,
-   PARSER_NDN_InnerTLVBiggerThanOuterTLV_ComponentBiggerThanName,
-   PARSER_NDN_ComponentsLengthExceedsNameSize,
-   PARSER_NDN_NumberOfComponentsAboveMaximum,
+   NDN_InnerTLVBiggerThanOuterTLV,
+   NDN_InnerTLVBiggerThanOuterTLV_NameBiggerThanTL0,
+   NDN_InnerTLVBiggerThanOuterTLV_ComponentBiggerThanName,
+   NDN_ComponentsLengthExceedsNameSize,
+   NDN_NumberOfComponentsAboveMaximum,
    
-   PARSER_P4_CannotExpressVarbitLengthInBits, //a dual argument extract() needs
+   P4_CannotExpressVarbitLengthInBits, //a dual argument extract() needs
    //to be fed with a parameter indicating the number of bits to extract. TLVs
    //express it in bytes. If the number of bytes results in carry when
    //expressed in bits, then we cannot parse this packet
 
-   PARSER_NDN_Interest_BadNonceLength,
-   PARSER_NDN_Interest_DelegationWithoutLink,
-   PARSER_NDN_Interest_DuplicateOptionalField_Lifetime,
-   PARSER_NDN_Interest_DuplicateOptionalField_Link,
-   PARSER_NDN_Interest_DuplicateOptionalField_Delegation,
-   PARSER_NDN_Interest_ExpectedNonce,
+   NDN_Interest_BadNonceLength,
+   NDN_Interest_DelegationWithoutLink,
+   NDN_Interest_DuplicateOptionalField_Lifetime,
+   NDN_Interest_DuplicateOptionalField_Link,
+   NDN_Interest_DuplicateOptionalField_Delegation,
+   NDN_Interest_ExpectedNonce,
    
-   PARSER_NDN_Data_ExpectedMetainfo,
-   PARSER_NDN_Data_MetainfoTooBig,
-   PARSER_NDN_Data_ContentTypeBiggerThanOneByte,
-   PARSER_NDN_Data_FreshnessPeriodBiggerThanTwoBytes,
-   PARSER_NDN_Data_FinalBlockIdTooBig,
+   NDN_Data_ExpectedMetainfo,
+   NDN_Data_MetainfoTooBig,
+   NDN_Data_ContentTypeBiggerThanOneByte,
+   NDN_Data_FreshnessPeriodBiggerThanTwoBytes,
+   NDN_Data_FinalBlockIdTooBig,
    
-   PARSER_NDN_Data_ExpectedContent,
-   PARSER_NDN_Data_ExpectedSignatureInfo,
-   PARSER_NDN_Data_ExpectedSignatureValue
+   NDN_Data_ExpectedContent,
+   NDN_Data_ExpectedSignatureInfo,
+   NDN_Data_ExpectedSignatureValue
 }
 
 #endif  /* _P4_NDN_DEFINITIONS_ */

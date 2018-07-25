@@ -51,7 +51,7 @@ parser TLVreader(    //INVOCATION PARAMETERS
    state start {
       lencode = b.lookahead<bit<16>>() & 0x00FF;
 
-      verify(lencode != 255, error.PARSER_P4_TLVTooLarge);
+      verify(lencode != 255, error.P4_TLVTooLarge);
 
       transition select( lencode ) {
          0..(ENCODING_2BYTE-1) : extract_small_TLV;
@@ -130,7 +130,7 @@ parser TLVreader(    //INVOCATION PARAMETERS
       
       //3RD: Verify cases where we can't extract this TLV correctly  
       verify((m.lastTLVsize & 0xE0000000) == 0,
-         error.PARSER_P4_CannotExpressVarbitLengthInBits);
+         error.P4_CannotExpressVarbitLengthInBits);
       //remember that the dual parameter extract() takes the length, in BITS. 
       //If this NDN's length is more BYTES than can be expressed in BITS,
       //then we cannot parse this packet.
@@ -196,7 +196,7 @@ standard_metadata_t standard_metadata) {
       //Check if packet's size is larger than our MTU
       verify( ((m.lastTLVlencode < ENCODING_2BYTE) /*&& (m.lastTLVsize < MTU)*/)
       || ((m.lastTLVlencode < ENCODING_4BYTE) && ((0x7FffFFff - m.pktsize - 4) < MTU)),
-            error.PARSER_P4_TLVTooLarge);
+            error.P4_TLVTooLarge);
       
       parserattribute_tlv0lencode = m.lastTLVlencode;
       m.NDNpkttype = m.lastTLVtype;
@@ -205,7 +205,7 @@ standard_metadata_t standard_metadata) {
       verify( m.lastTLVtype == NDNTYPE_INTEREST
           || m.lastTLVtype == NDNTYPE_DATA
           || m.lastTLVtype == NDNTYPE_NAK, 
-            error.PARSER_NDN_UnknownPacketType);
+            error.NDN_UnknownPacketType);
       //later we will branch off depending on the type
       //but verify here to immediately discard this packet if it is malformed.
       
@@ -217,10 +217,10 @@ standard_metadata_t standard_metadata) {
       m.namesize = m.lastTLVsize;
       
       verify( m.lastTLVtype == NDNTYPE_NAME,
-            error.PARSER_NDN_ExpectedNameAfterTL0);
+            error.NDN_ExpectedNameAfterTL0);
       verify( m.lastTLVlencode < parserattribute_tlv0lencode 
             || m.namesize < m.pktsize,
-            error.PARSER_NDN_InnerTLVBiggerThanOuterTLV_NameBiggerThanTL0 );
+            error.NDN_InnerTLVBiggerThanOuterTLV_NameBiggerThanTL0 );
       
       //=======================================================================
       // ===== 3RD: --- Prepare metadata
@@ -243,18 +243,18 @@ standard_metadata_t standard_metadata) {
       //=======================================================================
       // ===== 4.0:  -- Inspect starting conditions
       verify( m.number_of_components < MAXIMUM_COMPONENTS,
-            error.PARSER_NDN_NumberOfComponentsAboveMaximum );
+            error.NDN_NumberOfComponentsAboveMaximum );
       
       // ===== 4.1: -- Extract a component and decrement namesize
       TLVr.apply(b, p.components[m.number_of_components], m.namesize, m, 1);
       
       // ===== 4.2: -- Verify types and lengths
       verify( m.lastTLVtype == NDNTYPE_COMPONENT, 
-         error.PARSER_NDN_ExpectedComponent );
+         error.NDN_ExpectedComponent );
       verify( m.lastTLVlencode <= parserattribute_namelen,
-         error.PARSER_NDN_InnerTLVBiggerThanOuterTLV_ComponentBiggerThanName );
+         error.NDN_InnerTLVBiggerThanOuterTLV_ComponentBiggerThanName );
       verify( m.lastTLVsize <= m.namesize,
-         error.PARSER_NDN_InnerTLVBiggerThanOuterTLV_ComponentBiggerThanName );
+         error.NDN_InnerTLVBiggerThanOuterTLV_ComponentBiggerThanName );
       // if the above condition isn't met, then the packet has a name size
       // bigger than the sum of all components
 
@@ -384,8 +384,8 @@ standard_metadata_t standard_metadata) {
       b.extract( p.nonce );
       m.pktsize = m.pktsize - 6;//1 bytes of type, 1 of lencode, 4 of value
       
-      verify( p.nonce.type == NDNTYPE_NONCE, error.PARSER_NDN_Interest_ExpectedNonce );
-      verify( p.nonce.lencode == 4, error.PARSER_NDN_Interest_BadNonceLength );
+      verify( p.nonce.type == NDNTYPE_NONCE, error.NDN_Interest_ExpectedNonce );
+      verify( p.nonce.lencode == 4, error.NDN_Interest_BadNonceLength );
       //"The Nonce carries a randomly-generated 4-octet long byte-string.
       // The combination of Name and Nonce should uniquely identify an Interest.
       // This is used to detect looping Interests." 
@@ -422,7 +422,7 @@ standard_metadata_t standard_metadata) {
    state lifetime {
       verify( !p.lifetime.smallTLV.isValid() && !p.lifetime.mediumTLV.isValid() &&
             !p.lifetime.largeTLV.isValid(),
-            error.PARSER_NDN_Interest_DuplicateOptionalField_Lifetime);
+            error.NDN_Interest_DuplicateOptionalField_Lifetime);
       //if this verify() checks out, then lifetime is yet to be filled.
       
       TLVr.apply(b, p.lifetime, m.pktsize, m, 1);
@@ -435,7 +435,7 @@ standard_metadata_t standard_metadata) {
    state link {
       verify( !p.link.smallTLV.isValid() && !p.link.mediumTLV.isValid() &&
             !p.link.largeTLV.isValid(),
-            error.PARSER_NDN_Interest_DuplicateOptionalField_Link );
+            error.NDN_Interest_DuplicateOptionalField_Link );
 
       TLVr.apply(b, p.link, m.pktsize, m, 1);
       m.linktype = NDNTYPE_DATA;
@@ -446,9 +446,9 @@ standard_metadata_t standard_metadata) {
    state delegation {
       verify( !p.delegation.smallTLV.isValid() && !p.delegation.mediumTLV.isValid() &&
             !p.delegation.largeTLV.isValid(),
-            error.PARSER_NDN_Interest_DuplicateOptionalField_Lifetime );
+            error.NDN_Interest_DuplicateOptionalField_Lifetime );
       verify( m.linktype == NDNTYPE_DATA,
-             error.PARSER_NDN_Interest_DelegationWithoutLink );
+             error.NDN_Interest_DelegationWithoutLink );
       //"If Link field is not present, the SelectedDelegation field MUST NOT be present."
       //(from named-data.net/doc/ndn-tl/interest.html)
       //Therefore, if SelectedDelegation is present, so is Link
@@ -465,9 +465,9 @@ standard_metadata_t standard_metadata) {
       //1ST -- Metainfo type and length
       b.extract(p.metainfo);
       
-      verify( p.metainfo.type == NDNTYPE_METAINFO, error.PARSER_NDN_Data_ExpectedMetainfo);
+      verify( p.metainfo.type == NDNTYPE_METAINFO, error.NDN_Data_ExpectedMetainfo);
       verify( p.metainfo.lencode <= 4 + FRESHNESS_LENGTH + CONTENTTYPE_LENGTH +
-             (MAXIMUM_COMPONENTS_LOG >> 3)+1, error.PARSER_NDN_Data_MetainfoTooBig);         
+             (MAXIMUM_COMPONENTS_LOG >> 3)+1, error.NDN_Data_MetainfoTooBig);         
       /* NOTE: In NDN Data packet format, all of Metainfo's fields are optional,
        * but Metainfo itself is not marked as such. Therefore, we assume we'll always
        * have at least Type and Length to deal with (lencode can be zero).
@@ -499,7 +499,7 @@ standard_metadata_t standard_metadata) {
       b.extract(p.contentType);
 
       verify( p.contentType.lencode == CONTENTTYPE_LENGTH,
-             error.PARSER_NDN_Data_ContentTypeBiggerThanOneByte );
+             error.NDN_Data_ContentTypeBiggerThanOneByte );
       //No need to verify type: if type isn't NDNTYPE_CONTENTTYPE then we don't reach here
       
       transition select( b.lookahead<bit<8>>() ) {
@@ -515,7 +515,7 @@ standard_metadata_t standard_metadata) {
       b.extract(p.freshnessPeriod);
       
       verify( p.freshnessPeriod.lencode == FRESHNESS_LENGTH,
-             error.PARSER_NDN_Data_FreshnessPeriodBiggerThanTwoBytes);
+             error.NDN_Data_FreshnessPeriodBiggerThanTwoBytes);
       
       transition select( b.lookahead<bit<8>>() ) {
          NDNTYPE_FINALBLOCKID: parse_optional_finalBlockId;
@@ -529,7 +529,7 @@ standard_metadata_t standard_metadata) {
       b.extract(p.finalBlockId);
       
       verify( p.finalBlockId.lencode <= (MAXIMUM_COMPONENTS >> 3),
-             error.PARSER_NDN_Data_FinalBlockIdTooBig);
+             error.NDN_Data_FinalBlockIdTooBig);
       // Verifying p.finalBlockId.value is unneeded: if it is bigger than
       // MAXIMUM_COMPONENTS, it exceeds the representation.
       
@@ -540,18 +540,18 @@ standard_metadata_t standard_metadata) {
    state parsing_data_final
    {
       TLVr.apply(b, p.content, m.pktsize, m, 1);
-      verify( m.lastTLVtype == NDNTYPE_CONTENT, error.PARSER_NDN_Data_ExpectedContent );
+      verify( m.lastTLVtype == NDNTYPE_CONTENT, error.NDN_Data_ExpectedContent );
       
       m.parsed = 1;
       
    #ifdef CHECK_SIGNATURES
       TLVr.apply(b, p.signatureinfo, m.pktsize, m, 1);
       verify( m.lastTLVtype == NDNTYPE_SIGNATUREINFO,
-            error.PARSER_NDN_Data_ExpectedSignatureInfo );
+            error.NDN_Data_ExpectedSignatureInfo );
       
       TLVr.apply(b, p.signaturevalue, m.pktsize, m, 1);
       verify( m.lastTLVtype == NDNTYPE_SIGNATUREVAL,
-            error.PARSER_NDN_Data_ExpectedSignatureValue );
+            error.NDN_Data_ExpectedSignatureValue );
    #endif // CHECK_SIGNATURES
       
       transition accept;

@@ -30,7 +30,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       b.extract( p.components[0] );
    
       verify( (P4DualExtractArg) p.components[0].lencode <= m.namesize,
-             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+             error.NDN_ComponentsLengthExceedsNameSize );
       
       m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
       m.number_of_components = m.number_of_components + 1;
@@ -46,7 +46,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       b.extract( p.components[1] );
    
       verify( (P4DualExtractArg) p.components[1].lencode <= m.namesize,
-             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+             error.NDN_ComponentsLengthExceedsNameSize );
       
       m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
       m.number_of_components = m.number_of_components + 1;
@@ -61,7 +61,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       b.extract( p.components[2] );
    
       verify( (P4DualExtractArg) p.components[2].lencode <= m.namesize,
-             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+             error.NDN_ComponentsLengthExceedsNameSize );
       
       m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
       m.number_of_components = m.number_of_components + 1;
@@ -76,7 +76,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       b.extract( p.components[3] );
    
       verify( (P4DualExtractArg) p.components[3].lencode <= m.namesize,
-             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+             error.NDN_ComponentsLengthExceedsNameSize );
       
       m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
       m.number_of_components = m.number_of_components + 1;
@@ -91,7 +91,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       b.extract( p.components[4] );
    
       verify( (P4DualExtractArg) p.components[4].lencode <= m.namesize,
-             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+             error.NDN_ComponentsLengthExceedsNameSize );
       
       m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
       m.number_of_components = m.number_of_components + 1;
@@ -106,7 +106,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       b.extract( p.components[5] );
    
       verify( (P4DualExtractArg) p.components[5].lencode <= m.namesize,
-             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+             error.NDN_ComponentsLengthExceedsNameSize );
       
       m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
       m.number_of_components = m.number_of_components + 1;
@@ -121,7 +121,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       b.extract( p.components[6] );
    
       verify( (P4DualExtractArg) p.components[6].lencode <= m.namesize,
-             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+             error.NDN_ComponentsLengthExceedsNameSize );
       
       m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
       m.number_of_components = m.number_of_components + 1;
@@ -136,7 +136,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       b.extract( p.components[7] );
    
       verify( (P4DualExtractArg) p.components[7].lencode <= m.namesize,
-             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+             error.NDN_ComponentsLengthExceedsNameSize );
       
       m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
       m.number_of_components = m.number_of_components + 1;
@@ -151,7 +151,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       b.extract( p.components[8] );
    
       verify( (P4DualExtractArg) p.components[8].lencode <= m.namesize,
-             error.PARSER_NDN_ComponentsLengthExceedsNameSize );
+             error.NDN_ComponentsLengthExceedsNameSize );
       
       m.namesize = m.namesize - 2 - (VALUE_LENGTH >> 3);
       m.number_of_components = m.number_of_components + 1;
@@ -163,6 +163,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
    
    
    state parse_by_pkttype {
+      m.parsed = 1;
       transition select( m.NDNpkttype ) {
          NDNTYPE_DATA: parse_data;
          NDNTYPE_INTEREST: parse_interest;
@@ -177,7 +178,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       
       //p.tl0.type = 0xff;
       
-      m.parsed = 1;
+      //m.parsed = 1;
       
       transition accept;
    }
@@ -187,7 +188,7 @@ parser InitialParser(packet_in b, out Parsed_packet p, inout Metadata m, inout s
       //extract( p.selectors );
       b.extract( p.nonce );
       
-      m.parsed = 1;
+      //m.parsed = 1;
       
       //p.tl0.type = 0xfe;
       
