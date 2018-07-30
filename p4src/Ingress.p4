@@ -128,10 +128,11 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
     bit<HASHTRAY_LENGTH> associated_name;
     hash(regindex, HashAlgorithm.crc32, (Hash) 0, m.hashtray,
          (Hash) (REGISTER_ARRAY_SIZE-1));
-    // Using the classic modulo division to index a hashmap won't work here.
+    // Using a classic method of indexing into a hash table won't work.
     // Due to the way the hashtray is built, the rightmost bits are almost
-    // always zeroes. Since modulo is analoguous to BIT-ANDing the rightmost
-    // bits, using this method would yield 0 practically everytime.
+    // always zeroes. Therefore, treating the hashtray as a big integer and
+    // using modulo (analogue to using bit-AND on the rightmost bits) will
+    // yield 0 practically everytime.
 
     
     
@@ -169,7 +170,10 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
       //1ST: Consult PIT to see if we were expecting this Data
       // Place the port array of requesting faces in m.mcastports
       PIT.read(m.mcastports, regindex);
-
+      
+      // NOTE: We do not check PITnames because we're assuming no Data will
+      // arrive whose hashtray yields this index, though this ain't necessarily
+      // true...
 
       //2ND: Add to the CS and clone to every output port.
       if (m.mcastports == 0) { //No ports requested this => spurious => drop
@@ -232,32 +236,52 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
   
 #endif // CONTENT_STORE       
         
-      //Else we'll have to record this Interest in the PIT and nonces.
-        PIT.read(m.mcastports, regindex);
+        // Extract association in PIT index 'regindex'.
+
         PITnames.read(associated_name, regindex);
-      
-        if (associated_name != m.hashtray) { //occupied cell
-          Drop(); //The consumer will have to try again later
-          return;
-        }
-
-        if (m.mcastports == 0) { //First Interest seen for this name
+        
+        
+        // CASE A: 
+        // Cell is freed <=> first Interest seen for this name
+        if (associated_name == 0) {
+          
+          // A.1 -- Consult the FIB
           switch (fib.apply().action_run) {
-            Drop: { return; } //Forward if entry exists, otherwise Drop
-            //return is necessary to avoid altering the PIT
-            //TODO: Should send NAK packet towards ingress_port
+              Drop: { return; } //Forward if entry exists, otherwise Drop
+              //return is necessary to avoid altering the PIT
+              //TODO: Should send NAK packet towards ingress_port
           };
+          
+          // A.2 -- Store data in PIT
+          PITnames.write(regindex, m.hashtray);
+          PIT.write(regindex, 
+              (bit<NUMBER_OF_PORTS>) 1 << ((bit<8>) stdm.ingress_port));
+        
+          
+        // CASE B: 
+        // Cell is already occupied with the same name as this Interest
+        } else if (associated_name == m.hashtray) {
+          
+          // B.1 -- Retrieve the bit array already there
+          PIT.read(m.mcastports, regindex);
+          
+          // B.2 -- BIT-OR the current array with the bit of this ingress_port
+          // to memorize that it is also requesting the same name
+          m.mcastports = m.mcastports | 
+            ((bit<NUMBER_OF_PORTS>) 1 << ((bit<8>) stdm.ingress_port));
+          
+          // B.3 -- Store the result back in the PIT
+          PIT.write(regindex, m.mcastports);
+        
+          
+        // CASE C: 
+        // PIT cell is occupied by another name => Drop. Consumer must try
+        // again later, hopefully after the request which occupies this PIT
+        // cell has already been served.
+        } else {
+          Drop();
         }
-
-        // The bit<8> cast below is necessary because BMv2 tolerates a
-        // shift count of a value expressed in a maximum of 8 bits.
-        // "ingress_port" is 9 bits.
-        m.mcastports = m.mcastports | 
-          ((bit<NUMBER_OF_PORTS>) 1 << ((bit<8>) stdm.ingress_port));
-            
-        PIT.write(regindex, m.mcastports);
-        PITnames.write(regindex, m.hashtray);
-            
+        
 #ifdef CONTENT_STORE
       }
 #endif
