@@ -242,6 +242,7 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
         
         // CASE A: 
         // Cell is freed => first Interest seen for this name
+        // (this should be the most common case, so this if comes first)
         if (associated_name == 0) {
           
           // A.1 -- Consult the FIB
