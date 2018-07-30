@@ -237,12 +237,11 @@ control TopIngress(inout Parsed_packet p, inout Metadata m,
 #endif // CONTENT_STORE       
         
         // Extract association in PIT index 'regindex'.
-
         PITnames.read(associated_name, regindex);
         
         
         // CASE A: 
-        // Cell is freed <=> first Interest seen for this name
+        // Cell is freed => first Interest seen for this name
         if (associated_name == 0) {
           
           // A.1 -- Consult the FIB
