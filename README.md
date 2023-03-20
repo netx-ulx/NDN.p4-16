@@ -1,3 +1,6 @@
+# OUTDATED (2023)
+This repository has not been updated in several years. Since P4 tools have changed significantly, any instructions presented are obsolete and are unlikely to function. Regardless, you may still peruse `p4src` for our implementation of a NDN router on the v1model architecture.
+
 # NDN.p4-16
 
 This repository contains the source code for "_Named Data Networking using Programmable Switches_", a master's dissertation by Rui Miguel and supervised by Fernando Ramos, both from the Faculty of Sciences of the University of Lisbon, Portugal.
